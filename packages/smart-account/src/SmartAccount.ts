@@ -86,7 +86,6 @@ class SmartAccount {
     this.supportedNetworkIds = this.#smartAccountConfig.supportedNetworksIds
     this.provider = walletProvider
     this.signer = walletProvider.getSigner()
-
     this.nodeClient = new NodeClient({ txServiceUrl: this.#smartAccountConfig.backend_url })
   }
 
@@ -119,6 +118,7 @@ class SmartAccount {
     }
     // Review
     this.owner = await this.ethersAdapter().getSignerAddress()
+
     // Commeting below only for debugging test case!!
     this.address = await this.getAddress()
     return this
