@@ -29,6 +29,9 @@ const smartAccountContracts_V1_0_1 = [
   `${smartAccountContractsPath}/V1.0.1.sol/SmartWalletFactoryContract_v1_0_1.json`,
   `${smartAccountContractsPath}/V1.0.1.sol/EntryPointContract_v1_0_1.json`
 ].join(' ')
+const crossChainContracts = [
+  `${smartAccountContractsPath}/CrossChain.sol/BiconomyLiquidityPool.json`
+].join(' ')
 
 // Remove existing Typechain files
 execSync(`rimraf ${outDirSrc} ${outDirTests}`)
@@ -67,6 +70,7 @@ const ethersV5 = 'ethers-v5'
 // Src: Ethers V5 types
 generateTypechainFiles(ethersV5, `${outDirSrc}${ethersV5}/v1.0.0`, smartAccountContracts_V1_0_0)
 generateTypechainFiles(ethersV5, `${outDirSrc}${ethersV5}/v1.0.1`, smartAccountContracts_V1_0_1)
+generateTypechainFiles(ethersV5, `${outDirSrc}${ethersV5}/CrossChain`, crossChainContracts)
 
 moveTypechainFiles(
   `${typeChainDirectorySrcPath}${ethersV5}/v1.0.0`,
@@ -75,4 +79,8 @@ moveTypechainFiles(
 moveTypechainFiles(
   `${typeChainDirectorySrcPath}${ethersV5}/v1.0.1`,
   `${typeChainDirectoryBuildPath}${ethersV5}/v1.0.1`
+)
+moveTypechainFiles(
+  `${typeChainDirectorySrcPath}${ethersV5}/CrossChain`,
+  `${typeChainDirectorySrcPath}${ethersV5}/CrossChain`
 )
