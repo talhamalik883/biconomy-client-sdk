@@ -7,7 +7,7 @@ import { ERC4337EthersProvider } from './ERC4337EthersProvider'
 import { ClientConfig } from './ClientConfig'
 import { HttpRpcClient } from './HttpRpcClient'
 import { UserOperationStruct } from '@account-abstraction/contracts'
-import { BaseWalletAPI } from './BaseWalletAPI'
+import { BiconomySmartAccountAPI } from './BiconomySmartAccountAPI'
 export class ERC4337EthersSigner extends Signer {
   // TODO: we have 'erc4337provider', remove shared dependencies or avoid two-way reference
   constructor (
@@ -15,7 +15,7 @@ export class ERC4337EthersSigner extends Signer {
     readonly originalSigner: Signer,
     readonly erc4337provider: ERC4337EthersProvider,
     readonly httpRpcClient: HttpRpcClient,
-    readonly smartWalletAPI: BaseWalletAPI) {
+    readonly smartWalletAPI: BiconomySmartAccountAPI) {
     super()
     defineReadOnly(this, 'provider', erc4337provider)
   }

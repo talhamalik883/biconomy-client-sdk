@@ -3,7 +3,8 @@ import { Provider } from '@ethersproject/providers'
 import { UserOperationStruct } from '@account-abstraction/contracts'
 
 import { EntryPointContractV101 } from '@biconomy-sdk/ethers-lib'
-
+import { arrayify, hexConcat } from 'ethers/lib/utils'
+import { Signer } from '@ethersproject/abstract-signer'
 import { TransactionDetailsForUserOp } from './TransactionDetailsForUserOp'
 import { resolveProperties } from 'ethers/lib/utils'
 import { PaymasterAPI } from './PaymasterAPI'
@@ -12,6 +13,7 @@ import { ContractUtils } from '@biconomy-sdk/transactions'
 import {
   SmartWalletContract,
 } from '@biconomy-sdk/core-types'
+import { WalletFactoryAPI } from './WalletFactoryAPI'
 /**
  * Base class for all Smart Wallet ERC-4337 Clients to implement.
  * Subclass should inherit 5 methods to support a specific wallet contract:
@@ -28,7 +30,7 @@ import {
 
 // Note: Resembles SmartAccount methods itself. Could be sperated out across smart-account & || transactions || new package and reclaim
 
-export abstract class BaseWalletAPI {
+export class BiconomySmartAccountAPI {
   private senderAddress!: string
   private isPhantom = true
   // entryPoint connected to "zero" address. allowed to make static calls (e.g. to getSenderAddress)
@@ -45,6 +47,8 @@ export abstract class BaseWalletAPI {
    */
   walletContract?: any
 
+  factory?: string
+
   /**
    * base constructor.
    * subclass SHOULD add parameters that define the owner (signer) of this wallet
@@ -52,14 +56,16 @@ export abstract class BaseWalletAPI {
    * @param entryPointAddress - the entryPoint to send requests through (used to calculate the request-id, and for gas estimations)
    * @param walletAddress. may be empty for new wallet (using factory to determine address)
    */
-  protected constructor(
+   constructor (
     readonly provider: Provider,
     readonly contractUtils: ContractUtils,
     readonly entryPoint: EntryPointContractV101,
-    readonly walletAddress?: string
+    readonly walletAddress: string | undefined,
+    readonly owner: Signer,
+    readonly handlerAddress: string,
+    readonly factoryAddress: string,
+    readonly index = 0
   ) {
-    // factory "connect" define the contract address. the contract "connect" defines the "from" address.
-    // this.entryPointView = EntryPoint__factory.connect(entryPointAddress, provider).connect(ethers.constants.AddressZero)
   }
 
   async _getWalletContract(): Promise<SmartWalletContract> {
@@ -90,12 +96,28 @@ export abstract class BaseWalletAPI {
    * return the value to put into the "initCode" field, if the wallet is not yet deployed.
    * this value holds the "factory" address, followed by this wallet's information
    */
-  abstract getWalletInitCode(): Promise<string>
+  /**
+   * return the value to put into the "initCode" field, if the wallet is not yet deployed.
+   * this value holds the "factory" address, followed by this wallet's information
+   */
+   async getWalletInitCode (): Promise<string> {
+    const deployWalletCallData = WalletFactoryAPI.deployWalletTransactionCallData(this.factoryAddress, await this.owner.getAddress(), this.entryPoint.address, this.handlerAddress, 0)
+    return hexConcat([
+      this.factoryAddress,
+      deployWalletCallData
+    ])
+  }
 
   /**
    * return current wallet's nonce.
    */
-  abstract getNonce(batchId: number): Promise<BigNumber>
+   async getNonce (batchId: number): Promise<BigNumber> {
+    if (await this.checkWalletPhantom()) {
+      return BigNumber.from(0)
+    }
+    const walletContract = await this._getWalletContract()
+    return await walletContract.getNonce(batchId)
+  }
 
   /**
    * encode the call from entryPoint through our wallet to the target contract.
@@ -103,13 +125,32 @@ export abstract class BaseWalletAPI {
    * @param value
    * @param data
    */
-  abstract encodeExecute(target: string, value: BigNumberish, data: string): Promise<string>
-
   /**
-   * sign a userOp's hash (requestId).
-   * @param requestId
+   * encode a method call from entryPoint to our contract
+   * @param target
+   * @param value
+   * @param data
    */
-  abstract signRequestId(requestId: string): Promise<string>
+   async encodeExecute (target: string, value: BigNumberish, data: string): Promise<string> {
+    const walletContract = await this._getWalletContract()
+    // Review Talha
+    console.log('here')
+    console.log(walletContract)
+    return walletContract.getInterface().encodeFunctionData(
+      'execFromEntryPoint',
+      [
+        target,
+        value,
+        data,
+        0, //temp
+        200000, //temp
+      ])
+  }
+
+  // TODO: May be need to move this to ERC4337EthersPrivider
+  async signRequestId (requestId: string): Promise<string> {
+    return await this.owner.signMessage(arrayify(requestId))
+  }
 
   /**
    * check if the wallet is already deployed.

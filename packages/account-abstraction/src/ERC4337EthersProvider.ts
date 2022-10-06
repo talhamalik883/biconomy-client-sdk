@@ -8,7 +8,7 @@ import { ERC4337EthersSigner } from './ERC4337EthersSigner'
 import { UserOperationEventListener } from './UserOperationEventListener'
 import { HttpRpcClient } from './HttpRpcClient'
 import { EntryPoint, UserOperationStruct } from '@account-abstraction/contracts'
-import { BaseWalletAPI } from './BaseWalletAPI'
+import { BiconomySmartAccountAPI } from './BiconomySmartAccountAPI'
 
 export class ERC4337EthersProvider extends BaseProvider {
   initializedBlockNumber!: number
@@ -21,7 +21,7 @@ export class ERC4337EthersProvider extends BaseProvider {
     readonly originalProvider: BaseProvider,
     readonly httpRpcClient: HttpRpcClient,
     readonly entryPoint: EntryPoint,
-    readonly smartWalletAPI: BaseWalletAPI
+    readonly smartWalletAPI: BiconomySmartAccountAPI
   ) {
     super({
       name: 'ERC-4337 Custom Network',
