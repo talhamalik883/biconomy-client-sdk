@@ -252,8 +252,8 @@ export abstract class BaseWalletAPI {
     }
 
     const partialUserOp: any = {
-      sender: this.getWalletAddress(),
-      nonce: this.getNonce(0), // TODO: add batchid as param
+      sender: await this.getWalletAddress(),
+      nonce: await this.getNonce(0), // TODO: add batchid as param
       initCode,
       callData,
       callGasLimit,
@@ -261,6 +261,9 @@ export abstract class BaseWalletAPI {
       maxFeePerGas,
       maxPriorityFeePerGas
     }
+
+    console.log('partial user op')
+    console.log(partialUserOp)
 
     partialUserOp.paymasterAndData =
       this.paymasterAPI == null ? '0x' : await this.paymasterAPI.getPaymasterAndData(partialUserOp)

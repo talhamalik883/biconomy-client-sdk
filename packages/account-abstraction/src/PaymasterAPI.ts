@@ -10,6 +10,7 @@ export class PaymasterAPI {
   }
 
   async getPaymasterAndData (userOp: Partial<UserOperationStruct>): Promise<string> {
+    console.log('here....')
     console.log(userOp)
     /*userOp = await resolveProperties(userOp)
     // this.nodeClient.paymasterVerify()
