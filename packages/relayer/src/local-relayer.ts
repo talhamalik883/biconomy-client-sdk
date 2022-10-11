@@ -92,7 +92,6 @@ export class LocalRelayer implements Relayer {
       const txnData = multiSendCall
         .getInterface()
         .encodeFunctionData('multiSend', [encodeMultiSend(txs)])
-      console
 
       const finalRawRx = {
         to: multiSendCall.getAddress(),

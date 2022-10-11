@@ -51,3 +51,11 @@ export async function sendRequest<T>({ url, method, body }: HttpRequest): Promis
   }
   throw new Error(response.statusText)
 }
+
+export function getQueryString(params: any): string {
+  const esc = encodeURIComponent
+  const query = Object.keys(params)
+    .map((k) => `${esc(k)}=${esc(params[k].toString())}`)
+    .join('&')
+  return query
+}

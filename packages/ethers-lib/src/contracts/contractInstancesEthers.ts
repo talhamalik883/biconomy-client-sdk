@@ -22,6 +22,9 @@ import MultiSendCallOnlyEthersContract_v1_0_1 from './MultiSendCallOnly/v1.0.1/M
 import SmartWalletFacoryContractEthers_v1_0_0 from './SmartWalletFactory/v1.0.0/SmartWalletProxyFactoryEthersContract'
 import SmartWalletFacoryContractEthers_v1_0_1 from './SmartWalletFactory/v1.0.1/SmartWalletProxyFactoryEthersContract'
 
+import { BiconomyLiquidityPool__factory } from '../../typechain/src/ethers-v5/CrossChain'
+import { LiquidityPool } from './LiquidityPool/LiquidityPool'
+
 import { JsonRpcProvider } from '@ethersproject/providers'
 import { SmartAccountVersion } from '@biconomy-sdk/core-types'
 
@@ -30,9 +33,7 @@ export function getSmartWalletContractInstance(
   contractAddress: string,
   // signer: Signer
   provider: JsonRpcProvider
-):
-  | SmartWalletContractEthers_v1_0_0
-  | SmartWalletContractEthers_v1_0_1 {
+): SmartWalletContractEthers_v1_0_0 | SmartWalletContractEthers_v1_0_1 {
   let walletContract
   switch (smartAccountVersion) {
     case '1.0.0':
@@ -50,9 +51,7 @@ export function getMultiSendContractInstance(
   contractAddress: string,
   // signer: Signer
   provider: JsonRpcProvider
-):
-  | MultiSendEthersContract_v1_0_0
-  | MultiSendEthersContract_v1_0_1 {
+): MultiSendEthersContract_v1_0_0 | MultiSendEthersContract_v1_0_1 {
   let multiSendContract
 
   switch (smartAccountVersion) {
@@ -70,9 +69,7 @@ export function getMultiSendCallOnlyContractInstance(
   contractAddress: string,
   // signer: Signer
   provider: JsonRpcProvider
-):
-  | MultiSendCallOnlyEthersContract_v1_0_0
-  | MultiSendCallOnlyEthersContract_v1_0_1 {
+): MultiSendCallOnlyEthersContract_v1_0_0 | MultiSendCallOnlyEthersContract_v1_0_1 {
   let multiSendCallContract
 
   switch (smartAccountVersion) {
@@ -89,9 +86,7 @@ export function getSmartWalletFactoryContractInstance(
   smartAccountVersion: SmartAccountVersion,
   contractAddress: string,
   provider: JsonRpcProvider
-):
-  | SmartWalletFacoryContractEthers_v1_0_0
-  | SmartWalletFacoryContractEthers_v1_0_1 {
+): SmartWalletFacoryContractEthers_v1_0_0 | SmartWalletFacoryContractEthers_v1_0_1 {
   let walletFactoryContract
 
   switch (smartAccountVersion) {
@@ -102,4 +97,11 @@ export function getSmartWalletFactoryContractInstance(
       walletFactoryContract = SmartWalletFactoryContractV101.connect(contractAddress, provider)
       return new SmartWalletFacoryContractEthers_v1_0_1(walletFactoryContract)
   }
+}
+
+export function getLiquidityPoolInstance(
+  contractAddress: string,
+  provider: JsonRpcProvider
+): LiquidityPool {
+  return new LiquidityPool(BiconomyLiquidityPool__factory.connect(contractAddress, provider))
 }

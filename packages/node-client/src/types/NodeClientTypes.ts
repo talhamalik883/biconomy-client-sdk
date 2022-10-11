@@ -1,10 +1,16 @@
-import {
+import type {
   ChainId,
   SmartAccountVersion,
   MetaTransactionData,
   IFeeRefundV1_0_0,
-  IFeeRefundV1_0_1
+  IFeeRefundV1_0_1,
+  GasFeePaymentArgsStruct,
+  RawTransactionType,
+  TokenTransferArgs,
+  OptionalTokenTransferArgs
 } from '@biconomy-sdk/core-types'
+import type { BigNumberish } from 'ethers'
+
 export type SmartAccountInfoResponse = {
   readonly name: string
   readonly version: string
@@ -244,5 +250,59 @@ export type EstimateGasResponse = {
   data: {
     gas: number
     txBaseGas?: number
+  }
+}
+
+export type CrossChainGasEstimateDto = {
+  fromChainId: number
+  fromAddress: string
+  gasTokenAddress: string
+  rawSourceChainTx: RawTransactionType
+}
+
+export type GetTokenTransferFeeEstimateDto = {
+  fromAddress: string
+  tokenTransferArgs: TokenTransferArgs
+  optionalTransferArgs?: OptionalTokenTransferArgs
+}
+
+export type CrossChainGasEstimateResponse = {
+  message: string
+  code: number
+  data: GasFeePaymentArgsStruct
+}
+
+export type PreDepositCheckDto = {
+  tokenAddress: string
+  fromAddress: string
+  fromChainId: number
+  toChainId: number
+  amount: BigNumberish
+}
+
+export type PreDepositCheckResponse = {
+  message: string
+  code: number
+  data: {
+    status: boolean
+    reason?: string
+  }
+}
+
+export type GetPoolInfoDto = {
+  fromChainId: number
+  toChainId: number
+  tokenAddress: string
+}
+
+export type GetPoolInfoResponse = {
+  message: string
+  code: number
+  data: {
+    minDepositAmount: string
+    maxDepositAmount: string
+    availableLiquidity: string
+    fromLPManagerAddress: string
+    toLPManagerAddress: string
   }
 }

@@ -1,0 +1,23 @@
+{
+  "name": "@biconomy-sdk/ccmp",
+  "version": "1.0.13",
+  "description": "Biconomy Cross Chain Messaging Protocol Aggregator Client Library",
+  "homepage": "https://github.com/bcnmy/biconomy-client-sdk#readme",
+  "main": "lib/ccmp.js",
+  "author": "Biconomy (https://biconomy.io)",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bcnmy/biconomy-client-sdk.git"
+  },
+  "scripts": {},
+  "bugs": {
+    "url": "https://github.com/bcnmy/biconomy-client-sdk/issues"
+  },
+  "dependencies": {
+    "ethers": "^5.7.1"
+  }
+}

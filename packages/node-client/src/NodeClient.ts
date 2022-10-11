@@ -1,3 +1,4 @@
+import { EstimateTransferFeeResponse, RawTransactionType } from '@biconomy-sdk/core-types'
 import INodeClient from './INodeClient'
 import {
   EstimateExternalGasDto,
@@ -16,10 +17,17 @@ import {
   BalancesResponse,
   UsdBalanceResponse,
   EstimateGasResponse,
-  TransactionResponse
+  TransactionResponse,
+  CrossChainGasEstimateResponse,
+  CrossChainGasEstimateDto,
+  GetPoolInfoDto,
+  GetPoolInfoResponse,
+  PreDepositCheckDto,
+  PreDepositCheckResponse,
+  GetTokenTransferFeeEstimateDto
 } from './types/NodeClientTypes'
 import { getTxServiceBaseUrl } from './utils'
-import { HttpMethod, sendRequest } from './utils/httpRequests'
+import { HttpMethod, sendRequest, getQueryString } from './utils/httpRequests'
 export interface NodeClientConfig {
   /** txServiceUrl - Safe Transaction Service URL */
   txServiceUrl: string
@@ -151,17 +159,19 @@ class NodeClient implements INodeClient {
     })
   }
 
-  async estimateRequiredTxGasOverride(estimateRequiredTxGasDto: EstimateRequiredTxGasDto
-    ): Promise<EstimateGasResponse> {
-      return sendRequest({
-        url: `${this.#txServiceBaseUrl}/estimator/required-override`,
-        method: HttpMethod.Post,
-        body: estimateRequiredTxGasDto
-      })
-    }
+  async estimateRequiredTxGasOverride(
+    estimateRequiredTxGasDto: EstimateRequiredTxGasDto
+  ): Promise<EstimateGasResponse> {
+    return sendRequest({
+      url: `${this.#txServiceBaseUrl}/estimator/required-override`,
+      method: HttpMethod.Post,
+      body: estimateRequiredTxGasDto
+    })
+  }
 
-  async estimateHandlePaymentGasOverride(estimateHandlePaymentTxGasDto: EstimateHandlePaymentTxGasDto
-    ): Promise<EstimateGasResponse> {
+  async estimateHandlePaymentGasOverride(
+    estimateHandlePaymentTxGasDto: EstimateHandlePaymentTxGasDto
+  ): Promise<EstimateGasResponse> {
     return sendRequest({
       url: `${this.#txServiceBaseUrl}/estimator/handle-payment-override`,
       method: HttpMethod.Post,
@@ -169,31 +179,78 @@ class NodeClient implements INodeClient {
     })
   }
 
-  async estimateUndeployedContractGas(estimateUndeployedContractGasDto: EstimateUndeployedContractGasDto): Promise<EstimateGasResponse> {
+  async estimateUndeployedContractGas(
+    estimateUndeployedContractGasDto: EstimateUndeployedContractGasDto
+  ): Promise<EstimateGasResponse> {
     return sendRequest({
       url: `${this.#txServiceBaseUrl}/estimator/undeployed`,
       method: HttpMethod.Post,
-       body: estimateUndeployedContractGasDto
-     })
-   }
+      body: estimateUndeployedContractGasDto
+    })
+  }
 
-   getTransactionByAddress(
-     chainId: number,
-     address: string
-  ): Promise<TransactionResponse[]>{
+  getTransactionByAddress(chainId: number, address: string): Promise<TransactionResponse[]> {
     return sendRequest({
       url: `${this.#txServiceBaseUrl}/transactions/chainId/${chainId}/address/${address}`,
       method: HttpMethod.Get
-     })
+    })
   }
 
-  getTransactionByHash(
-    txHash: string
-  ): Promise<TransactionResponse>{
+  getTransactionByHash(txHash: string): Promise<TransactionResponse> {
     return sendRequest({
       url: `${this.#txServiceBaseUrl}/transactions/txHash/${txHash}`,
       method: HttpMethod.Get
-     })
+    })
+  }
+
+  async getCrossChainGasEstimate(
+    getCrossChainGasEstimateDto: CrossChainGasEstimateDto
+  ): Promise<CrossChainGasEstimateResponse> {
+    return sendRequest({
+      url: `${this.#txServiceBaseUrl}/cross-chain/gas-estimate?${getQueryString(
+        getCrossChainGasEstimateDto
+      )}`,
+      method: HttpMethod.Get
+    })
+  }
+
+  async getLiquidityPoolInfo(
+    getLiquidityPoolInfoDto: GetPoolInfoDto
+  ): Promise<GetPoolInfoResponse> {
+    return sendRequest({
+      url: `${this.#txServiceBaseUrl}/cross-chain/liquidity-pool/gas-estimate?${getQueryString(
+        getLiquidityPoolInfoDto
+      )}`,
+      method: HttpMethod.Get
+    })
+  }
+
+  async preDepositCheck(preDepositCheckDto: PreDepositCheckDto): Promise<PreDepositCheckResponse> {
+    return sendRequest({
+      url: `${this.#txServiceBaseUrl}/cross-chain/liquidity-pool/pre-deposit-check`,
+      method: HttpMethod.Post,
+      body: preDepositCheckDto
+    })
+  }
+
+  async getCrossChainSupportedTokens(chainId: number): Promise<string[]> {
+    return sendRequest({
+      url: `${this.#txServiceBaseUrl}/cross-chain/liquidity-pool/tokens/chainId/${chainId}`,
+      method: HttpMethod.Get
+    })
+  }
+
+  async getTokenTransferFeeEstimate(
+    tokenTrasferFeeEstimateDto: GetTokenTransferFeeEstimateDto
+  ): Promise<EstimateTransferFeeResponse> {
+    return sendRequest({
+      url: `${
+        this.#txServiceBaseUrl
+      }/cross-chain/liquidity-pool/estimate-token-transfer-fee?${getQueryString({
+        params: btoa(JSON.stringify(tokenTrasferFeeEstimateDto))
+      })}`,
+      method: HttpMethod.Get
+    })
   }
 }
 
