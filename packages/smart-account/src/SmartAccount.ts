@@ -156,7 +156,7 @@ class SmartAccount {
    GassLess Flow -- config
    sendGaslessTransaction
    */
-  constructor(walletProvider: Web3Provider, config?: Partial<SmartAccountConfig>) {
+  constructor(walletSigner: Signer, config?: Partial<SmartAccountConfig>) {
     this.#smartAccountConfig = { ...DefaultSmartAccountConfig }
 
     // if ( !this.#smartAccountConfig.activeNetworkId ){
@@ -176,8 +176,8 @@ class SmartAccount {
     this.supportedNetworkIds = this.#smartAccountConfig.supportedNetworksIds
 
     // Should not break if we make this wallet connected provider optional (We'd have JsonRpcProvider / JsonRpcSender)
-    this.provider = walletProvider
-    this.signer = walletProvider.getSigner()
+    // this.provider = walletSigner
+    this.signer = walletSigner;
     // Refer to SmartAccountSigner from eth-bogota branch
 
     this.nodeClient = new NodeClient({ txServiceUrl: this.#smartAccountConfig.backend_url })

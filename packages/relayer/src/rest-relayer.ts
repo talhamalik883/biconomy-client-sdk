@@ -12,6 +12,7 @@ import {
 } from '@biconomy-sdk/core-types'
 import { MetaTransaction, encodeMultiSend } from './utils/multisend'
 import { HttpMethod, sendRequest } from './utils/httpRequests'
+import { ClientMessenger } from 'gasless-messaging-sdk';
 
 /**
  * Relayer class that would be used via REST API to execute transactions
@@ -113,12 +114,55 @@ export class RestRelayer implements Relayer {
 
       // JSON RPC Call
       // rawTx to becomes multiSend address and data gets prepared again 
-      return await this.relayerNodeEthersProvider
+      const response =  await this.relayerNodeEthersProvider
       .send('eth_sendSmartContractWalletTransaction', [{ ...signedTx.rawTx, gasLimit: (gasLimit as GasLimit).hex, refundInfo: {
         tokenGasPrice: signedTx.tx.gasPrice,
         gasToken: signedTx.tx.gasToken,
         } 
-      }])
+      }]);
+      const clientMessenger = new ClientMessenger(
+        'websocketUrl',
+      );
+      if (!clientMessenger.socketClient.isConnected()) {
+        await clientMessenger.connect();
+      }
+
+      clientMessenger.createTransactionNotifier(response.transactionId, {
+        onMined: (tx:any) => {
+          const txId = tx.transactionId;
+          clientMessenger.unsubscribe(txId);
+          console.log(`Tx Hash mined message received at client ${JSON.stringify({
+            id: txId,
+            hash: tx.transactionHash,
+            receipt: tx.receipt,
+          })}`);
+        },
+        onHashGenerated: async (tx:any) => {
+          const txHash = tx.transactionHash;
+          const txId = tx.transactionId;
+          console.log(`Tx Hash generated message received at client ${JSON.stringify({
+            id: txId,
+            hash: txHash,
+          })}`);
+
+          console.log(`Receive time for transaction id ${txId}: ${Date.now()}`);
+          return {
+            transactionId: txId,
+            txHash,
+          }
+        },
+        onError: async (tx:any) => {
+          const err = tx.error;
+          const txId = tx.transactionId;
+          console.log(`Error message received at client is ${err}`);
+          clientMessenger.unsubscribe(txId);
+
+          return {
+            transactionId: txId,
+            error: err,
+          }
+        },
+      });
    }
   
     console.log('signedTx', signedTx)
