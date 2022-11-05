@@ -4,9 +4,15 @@
 
 ## Usage
 
-```
-import Torus from "@biconomy-sdk/web3-auth";
+```ts
+import SocialLogin from "@biconomy-sdk/web3-auth";
 
-const torus = new Torus();
-torus.init();
+// init wallet
+const socialLoginSDK = new SocialLogin();
+await socialLoginSDK.init('0x5');
+socialLoginSDK.showConnectModal();
+
+
+// show connect modal
+socialLoginSDK.showWallet();
 ```

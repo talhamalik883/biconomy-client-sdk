@@ -10,6 +10,7 @@
   },
   "include": [
     "src",
-    "src/**/*.json"
+    "src/icons",
+    "src/icons/import-png.d.ts"
   ]
 }
