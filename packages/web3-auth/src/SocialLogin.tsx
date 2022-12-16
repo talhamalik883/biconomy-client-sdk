@@ -2,7 +2,6 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { ethers } from 'ethers'
 import { Web3AuthCore } from '@web3auth/core'
-import { NetworkSwitch } from '@web3auth/ui'
 import {
   WALLET_ADAPTERS,
   CHAIN_NAMESPACES,
@@ -16,7 +15,7 @@ import QRCodeModal from '@walletconnect/qrcode-modal'
 import NodeClient, { WhiteListSignatureResponse } from '@biconomy/node-client'
 
 import UI from './UI'
-import { DefaultSocialLoginConfig } from './types/Web3AuthConfig'
+import { DefaultSocialLoginConfig, SocialLoginDTO } from './types/Web3AuthConfig'
 
 function createLoginModal(socialLogin: SocialLogin) {
   const root = createRoot((document as any).getElementById('w3a-modal'))
@@ -55,26 +54,32 @@ class SocialLogin {
     return whiteListUrlResponse.data
   }
 
-  async init(
-    chainId: string,
-    whitelistUrls?: { [P in string]: string },
-    network: 'mainnet' | 'testnet' = 'testnet'
-  ) {
+  async init(socialLoginDTO?: Partial<SocialLoginDTO>) {
+    const finalDTO: SocialLoginDTO = {
+      chainId: '0x1',
+      whitelistUrls: {},
+      network: 'testnet'
+    }
+    if (socialLoginDTO) {
+      if (socialLoginDTO.chainId) finalDTO.chainId = socialLoginDTO.chainId
+      if (socialLoginDTO.network) finalDTO.network = socialLoginDTO.network
+      if (socialLoginDTO.whitelistUrls) finalDTO.whitelistUrls = socialLoginDTO.whitelistUrls
+    }
     try {
       console.log('SocialLogin init')
       const web3AuthCore = new Web3AuthCore({
         clientId: this.clientId,
         chainConfig: {
           chainNamespace: CHAIN_NAMESPACES.EIP155,
-          chainId: chainId
+          chainId: finalDTO.chainId
         }
       })
 
       const openloginAdapter = new OpenloginAdapter({
         adapterSettings: {
           clientId: this.clientId,
-          network: network,
-          uxMode: 'redirect',
+          network: finalDTO.network,
+          uxMode: 'popup',
           whiteLabel: {
             name: 'Biconomy SDK',
             logoLight: 'https://s2.coinmarketcap.com/static/img/coins/64x64/9543.png',
@@ -82,17 +87,15 @@ class SocialLogin {
             defaultLanguage: 'en',
             dark: true
           },
-          originData: whitelistUrls
+          originData: finalDTO.whitelistUrls
         }
       })
       const metamaskAdapter = new MetamaskAdapter({
         clientId: this.clientId
       })
-      const networkUi = new NetworkSwitch()
       const wcAdapter = new WalletConnectV1Adapter({
         adapterSettings: {
-          qrcodeModal: QRCodeModal,
-          networkSwitchModal: networkUi
+          qrcodeModal: QRCodeModal
         }
       })
 
@@ -104,6 +107,7 @@ class SocialLogin {
       if (web3AuthCore && web3AuthCore.provider) {
         this.provider = web3AuthCore.provider
       }
+      createLoginModal(this)
       this.isInit = true
     } catch (error) {
       console.error(error)
@@ -114,7 +118,7 @@ class SocialLogin {
     return this.provider
   }
 
-  _createIframe(iframeContainerDiv: any) {
+  private _createIframe(iframeContainerDiv: any) {
     this.walletIframe = document.createElement('iframe')
     this.walletIframe.style.display = 'none'
     this.walletIframe.style.display = 'relative'
@@ -125,7 +129,7 @@ class SocialLogin {
     iframeContainerDiv.appendChild(this.walletIframe)
   }
 
-  createWalletDiv() {
+  private createWalletDiv() {
     // create a fixed div into html but keep it hidden initially
     const walletDiv = document.createElement('div')
     walletDiv.id = 'w3a-modal'
@@ -160,10 +164,6 @@ class SocialLogin {
     console.log('hide wallet')
     this.walletDiv.style.display = 'none'
     this.walletIframe.style.display = 'none'
-  }
-
-  showConnectModal() {
-    createLoginModal(this)
   }
 
   async getUserInfo() {
@@ -208,11 +208,7 @@ class SocialLogin {
       const web3authProvider = await this.web3auth.connectTo(WALLET_ADAPTERS.OPENLOGIN, {
         loginProvider: 'email_passwordless',
         login_hint: email
-        // extraLoginOptions: {
-        //   login_hint: email
-        // }
       })
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const web3Provider = new ethers.providers.Web3Provider(web3authProvider!)
       const signer = web3Provider.getSigner()
       const gotAccount = await signer.getAddress()
@@ -284,15 +280,11 @@ const defaultSocialLoginConfig: DefaultSocialLoginConfig = {
 export default SocialLogin
 
 let initializedSocialLogin: SocialLogin | null = null
-const getSocialLoginSDK = async (
-  chainId: string,
-  whitelistUrls?: { [P in string]: string },
-  network: 'mainnet' | 'testnet' = 'testnet'
-) => {
+const getSocialLoginSDK = async (socialLoginDTO?: Partial<SocialLoginDTO>) => {
   if (initializedSocialLogin) {
     return initializedSocialLogin
   }
-  await socialLoginSDK.init(chainId, whitelistUrls, network)
+  await socialLoginSDK.init(socialLoginDTO)
   initializedSocialLogin = socialLoginSDK
   return socialLoginSDK
 }
