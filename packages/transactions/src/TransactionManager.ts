@@ -368,6 +368,8 @@ class TransactionManager {
       chainId: chainId
     })
 
+    // generic fee token transfer gas is used as gasPrice is sent 0 for handlePayment (wouldn't know fee quote at this point)
+
     feeOptionsAvailable.forEach((feeOption) => {
       const feeTokenTransferGas = feeOption.feeTokenTransferGas
       const tokenGasPrice = feeOption.tokenGasPrice || 0

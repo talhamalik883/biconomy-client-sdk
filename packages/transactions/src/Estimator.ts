@@ -23,6 +23,7 @@ export class Estimator {
     this.contractUtils = contractUtils
   }
 
+  // Below two methods can be combined into one
   async estimateTransaction(
     prepareTransactionDto: PrepareRefundTransactionDto,
     createdTransaction: IWalletTransaction,
@@ -103,6 +104,7 @@ export class Estimator {
       smartAccountState.address
     )
     if (!isDeployed) {
+      // Todo : Might be constant
       const estimateWalletDeployment = await this.estimateSmartAccountDeployment({
         chainId,
         version,
@@ -123,6 +125,7 @@ export class Estimator {
     }
 
     // to avoid failing eth_call override with undeployed wallet
+    // pass on requireTxGas
     txn.targetTxGas = 500000
 
     const refundInfo: IFeeRefundV1_0_1 = {
