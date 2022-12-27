@@ -122,6 +122,8 @@ class SmartAccount extends EventEmitter {
   // Note: Could remove WalletProvider later on
   constructor(walletProvider: Web3Provider, config?: Partial<SmartAccountConfig>) {
     super()
+    console.log('hey sm constructor');
+    
     if (config && config.debug === true) {
       isLogsEnabled = true
     }
